@@ -69,6 +69,9 @@ jobs:
           ../../../ts/sdk/node_modules/.bin/tsc 2>/dev/null || tsc
         working-directory: ts/sdk
 
+      - name: use upstream registries (repo ships a vendored-source config)
+        run: rm -f .cargo/config.toml && ls -la .cargo/ 2>/dev/null || echo ".cargo removed"
+
       - name: build program (sbf)
         run: |
           set -o pipefail
