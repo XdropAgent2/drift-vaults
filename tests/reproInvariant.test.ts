@@ -1,5 +1,5 @@
 import { BN, Program, AnchorProvider } from '@coral-xyz/anchor';
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { BankrunContextWrapper } from './common/bankrunConnection';
 import {
 	VaultClient,
@@ -36,7 +36,8 @@ import pythIDL from './fixtures/pyth.json';
 const mantissaSqrtScale = new BN(100_000);
 const ammInitialQuoteAssetReserve = new BN(5 * 10 ** 13).mul(mantissaSqrtScale);
 const ammInitialBaseAssetReserve = new BN(5 * 10 ** 13).mul(mantissaSqrtScale);
-const PYTH_PROGRAM_ID = 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH';
+const PYTH_PROGRAM_ID_STR = 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH';
+const PYTH_PROGRAM_ID = new PublicKey(PYTH_PROGRAM_ID_STR);
 
 /**
  * REPRO — transfer_vault_depositor_shares reverts with InvalidVaultSharesDetected
@@ -112,7 +113,7 @@ describe('reproInvariant', () => {
 		tx.recentBlockhash = bankrunContextWrapper.context.lastBlockhash;
 		tx.sign(bankrunContextWrapper.context.payer);
 		await bankrunContextWrapper.connection.sendTransaction(tx);
-		await bulkAccountLoader.update();
+		await bulkAccountLoader.load();
 	}
 
 	beforeAll(async () => {
@@ -149,7 +150,7 @@ describe('reproInvariant', () => {
 		await initializeQuoteSpotMarket(adminDriftClient, usdcMint);
 		await initializeSolSpotMarket(adminDriftClient, solPerpOracle);
 		await adminDriftClient.initializePerpMarket(
-			new BN(0),
+			0,
 			solPerpOracle,
 			ammInitialBaseAssetReserve,
 			ammInitialQuoteAssetReserve,
@@ -164,23 +165,32 @@ describe('reproInvariant', () => {
 			new BN(0),
 			new BN(0)
 		);
-		await bulkAccountLoader.update();
+		await bulkAccountLoader.load();
 
-		const mb = await bootstrapSignerClientAndUserBankrun(managerSigner, bankrunContextWrapper, {
+		const mb = await bootstrapSignerClientAndUserBankrun({
+			bankrunContext: bankrunContextWrapper,
+			signer: managerSigner,
 			usdcMint, usdcAmount, vaultClientCliMode: true,
+			programId: VAULT_PROGRAM_ID,
 			driftClientConfig: driftClientConfig(bulkAccountLoader, solPerpOracle),
 		});
 		managerClient = mb.vaultClient; managerDriftClient = mb.driftClient; managerUSDCAccount = mb.userUSDCAccount.publicKey;
 
-		const b1 = await bootstrapSignerClientAndUserBankrun(user1Signer, bankrunContextWrapper, {
+		const b1 = await bootstrapSignerClientAndUserBankrun({
+			bankrunContext: bankrunContextWrapper,
+			signer: user1Signer,
 			usdcMint, usdcAmount, vaultClientCliMode: true,
+			programId: VAULT_PROGRAM_ID,
 			driftClientConfig: driftClientConfig(bulkAccountLoader, solPerpOracle),
 		});
 		user1Client = b1.vaultClient; user1DriftClient = b1.driftClient; user1UserUSDCAccount = b1.userUSDCAccount.publicKey;
 		user1VaultDepositor = getVaultDepositorAddressSync(VAULT_PROGRAM_ID, commonVaultKey, user1Signer.publicKey);
 
-		const b2 = await bootstrapSignerClientAndUserBankrun(user2Signer, bankrunContextWrapper, {
+		const b2 = await bootstrapSignerClientAndUserBankrun({
+			bankrunContext: bankrunContextWrapper,
+			signer: user2Signer,
 			usdcMint, usdcAmount, vaultClientCliMode: true,
+			programId: VAULT_PROGRAM_ID,
 			driftClientConfig: driftClientConfig(bulkAccountLoader, solPerpOracle),
 		});
 		user2Client = b2.vaultClient; user2DriftClient = b2.driftClient; user2UserUSDCAccount = b2.userUSDCAccount.publicKey;
