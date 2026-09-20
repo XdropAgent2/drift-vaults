@@ -88,7 +88,9 @@ jobs:
           # vault program was just built into target/deploy. One dir for all three.
           cp -v target/deploy/drift_vaults.so tests/fixtures/drift_vaults.so
           ls -la tests/fixtures/
-          npx jest tests/reproInvariant.test.ts --runInBand --forceExit 2>&1 | tee /tmp/repro.log
+          npx jest tests/probeFileNotFound.test.ts --runInBand --forceExit --testTimeout=120000 2>&1 | tee /tmp/repro.log || true
+          echo '--- now the real repro ---'
+          npx jest tests/reproInvariant.test.ts --runInBand --forceExit 2>&1 | tee -a /tmp/repro.log
           echo "=== JEST EXIT: ${PIPESTATUS[0]} ==="
 
       - name: upload log
