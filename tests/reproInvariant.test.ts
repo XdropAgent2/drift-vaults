@@ -121,9 +121,22 @@ describe('reproInvariant', () => {
 		// drift + pyth programs ship as fixtures in tests/fixtures; our freshly
 		// built vault program lives in target/deploy. The CI step copies
 		// drift_vaults.so next to the fixtures so one dir serves all three.
+		// solana-bankrun 0.3.x treats startAnchor's first argument as an Anchor
+		// project directory (it reads Anchor.toml for [[test.genesis]]), not as a
+		// directory of .so files. Passing 'tests/fixtures' therefore fails with
+		// "File not found: No such file or directory (os error 2)" because that
+		// directory has no Anchor.toml. Passing '' keeps the legacy behaviour:
+		// each entry's `<name>.so` is resolved relative to the process cwd, which
+		// is why the three programs are copied to the repo root just below.
+		const { copyFileSync, existsSync } = await import('fs');
+		for (const name of ['drift_vaults', 'drift', 'pyth']) {
+			const src = `tests/fixtures/${name}.so`;
+			if (existsSync(src)) copyFileSync(src, `./${name}.so`);
+		}
+
 		const { startAnchor } = await import('solana-bankrun');
 		const context = await startAnchor(
-			'tests/fixtures',
+			'',
 			[
 				{ name: 'drift_vaults', programId: VAULT_PROGRAM_ID },
 				{ name: 'drift', programId: new PublicKey(DRIFT_PROGRAM_ID) },
