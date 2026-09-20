@@ -117,10 +117,15 @@ describe('reproInvariant', () => {
 	}
 
 	beforeAll(async () => {
+		// solana-bankrun's startAnchor loads <dir>/<name>.so for each entry. The
+		// drift + pyth programs ship as fixtures in tests/fixtures; our freshly
+		// built vault program lives in target/deploy. The CI step copies
+		// drift_vaults.so next to the fixtures so one dir serves all three.
 		const { startAnchor } = await import('solana-bankrun');
 		const context = await startAnchor(
-			'target/deploy',
+			'tests/fixtures',
 			[
+				{ name: 'drift_vaults', programId: VAULT_PROGRAM_ID },
 				{ name: 'drift', programId: new PublicKey(DRIFT_PROGRAM_ID) },
 				{ name: 'pyth', programId: PYTH_PROGRAM_ID },
 			],

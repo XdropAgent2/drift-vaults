@@ -84,6 +84,10 @@ jobs:
           RUST_LOG: solana_runtime::message_processor::stable_log=info
         run: |
           set -o pipefail
+          # bankrun loads <dir>/<name>.so — drift + pyth ship as fixtures, the
+          # vault program was just built into target/deploy. One dir for all three.
+          cp -v target/deploy/drift_vaults.so tests/fixtures/drift_vaults.so
+          ls -la tests/fixtures/
           npx jest tests/reproInvariant.test.ts --runInBand --forceExit 2>&1 | tee /tmp/repro.log
           echo "=== JEST EXIT: ${PIPESTATUS[0]} ==="
 
