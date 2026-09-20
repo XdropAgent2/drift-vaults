@@ -60,13 +60,13 @@ jobs:
       - name: Install deps
         run: yarn
 
-      - name: install typescript
-        run: npm install typescript -g
+      - name: install typescript (pin to repo version)
+        run: npm install typescript@5.6.3 -g
 
       - name: build sdk
         run: |
           yarn
-          tsc
+          ../../../ts/sdk/node_modules/.bin/tsc 2>/dev/null || tsc
         working-directory: ts/sdk
 
       - name: run repro test
