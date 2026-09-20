@@ -69,17 +69,26 @@ jobs:
           ../../../ts/sdk/node_modules/.bin/tsc 2>/dev/null || tsc
         working-directory: ts/sdk
 
-      - name: run repro test
+      - name: build program (sbf)
+        run: |
+          set -o pipefail
+          anchor build -- --features anchor-test 2>&1 | tee /tmp/build.log
+          echo "=== ANCHOR BUILD EXIT: ${PIPESTATUS[0]} ==="
+          ls -la target/deploy/
+
+      - name: run repro test (bankrun)
         env:
           RUST_LOG: solana_runtime::message_processor::stable_log=info
         run: |
           set -o pipefail
-          anchor test -- --features anchor-test --test reproInvariant 2>&1 | tee /tmp/repro.log
-          echo "=== ANCHOR EXIT: ${PIPESTATUS[0]} ==="
+          npx jest tests/reproInvariant.test.ts --runInBand --forceExit 2>&1 | tee /tmp/repro.log
+          echo "=== JEST EXIT: ${PIPESTATUS[0]} ==="
 
       - name: upload log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: repro-log
-          path: /tmp/repro.log
+          path: |
+            /tmp/repro.log
+            /tmp/build.log
