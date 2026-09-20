@@ -222,8 +222,8 @@ describe('reproInvariant', () => {
 				spotMarketIndex: 0,
 				redeemPeriod: ZERO,
 				maxTokens: ZERO,
-				managementFee: new BN(1_000_000), // 1% (PERCENTAGE_PRECISION=1e6)
-				profitShare: 100_000,             // 10%
+				managementFee: new BN(10_000),   // 1% of PERCENTAGE_PRECISION 1e6
+				profitShare: 100_000,            // 10%
 				hurdleRate: 0,
 				permissioned: false,
 				minDepositAmount: ZERO,
