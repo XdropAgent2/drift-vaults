@@ -85,7 +85,16 @@ describe('reproInvariant', () => {
 	let user2UserUSDCAccount: PublicKey;
 
 	function driftClientConfig(bulkAccountLoader: TestBulkAccountLoader, oracle: PublicKey) {
+		// activeSubAccountId + subAccountIds must be explicit. Without them
+		// DriftClient falls back to enumerating user accounts via
+		// connection.getProgramAccounts, which BankrunProvider's connection proxy
+		// does not implement, and the test dies in beforeAll with
+		// "TypeError: this._provider.connection.getProgramAccounts is not a function".
+		// The upstream tests (transferVaultDepositorShares, sharesExamples) all set
+		// these two; mirroring them is what keeps this a bankrun-compatible config.
 		return {
+			activeSubAccountId: 0,
+			subAccountIds: [] as number[],
 			perpMarketIndexes: [0],
 			spotMarketIndexes: [0, 1],
 			oracleInfos: [{ publicKey: oracle, source: OracleSource.PYTH }],
