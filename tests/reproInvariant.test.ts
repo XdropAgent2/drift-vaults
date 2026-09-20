@@ -121,7 +121,7 @@ describe('reproInvariant', () => {
 		const context = await startAnchor(
 			'target/deploy',
 			[
-				{ name: 'drift', programId: DRIFT_PROGRAM_ID },
+				{ name: 'drift', programId: new PublicKey(DRIFT_PROGRAM_ID) },
 				{ name: 'pyth', programId: PYTH_PROGRAM_ID },
 			],
 			[]
@@ -154,16 +154,8 @@ describe('reproInvariant', () => {
 			solPerpOracle,
 			ammInitialBaseAssetReserve,
 			ammInitialQuoteAssetReserve,
-			new BN(initialSolPerpPrice * 60 * 60 * 24),
-			new BN(initialSolPerpPrice),
-			OracleSource.PYTH,
-			new BN(0),
-			new BN(0),
-			new BN(0),
-			new BN(0),
-			new BN(1000000000),
-			new BN(0),
-			new BN(0)
+			new BN(0), // 1 HOUR
+			new BN(initialSolPerpPrice).mul(PEG_PRECISION)
 		);
 		await bulkAccountLoader.load();
 
